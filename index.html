@@ -1,0 +1,141 @@
+
+<html>
+	<head>
+		<title>Snake game</title>
+		<style>
+		body{margin:0; padding:0;}
+		#wrapper{width:auto; height:auto; border:1px solid grey;}
+		.box{width:10px; height:10px; border:1px solid black; float:left;}
+		.boxfilled {width:10px; height:10px; background:black; border:1px solid grey; float:left;}
+		.clearboxes {clear:both;}
+		</style>
+		<script>
+		var WIDTH=20, HEIGHT=20;
+		var snake = new Array();
+		var direction = 2; // 0 - left, 1 - up, 2 - right, 3 - down 
+		var food = new Array();
+		function init()
+		{
+			//init the grid 
+			for (i=0;i<HEIGHT;i++)
+			{
+				for (j=0;j<WIDTH;j++)
+				{
+					var b1 = document.createElement("div");
+					b1.className = "box";
+					b1.id = i+"x"+j;
+					document.getElementById("wrapper").appendChild(b1);
+				}
+				var c = document.createElement("div");
+				c.className = "clearboxes";
+				document.getElementById("wrapper").appendChild(c);
+			}
+			//start the game 
+			restart_game();
+			
+			//start gameloop
+			setInterval("gameloop()",100);
+		}
+		
+		function restart_game()
+		{
+			snake.splice(0,snake.length); 
+			//init the snake 
+			snake[0] = [2,0];//head
+			snake[1] = [1,0];
+			snake[2] = [0,0];//tail
+			//init the food 
+			init_food();
+			//reset direction 
+			direction =2;
+		}
+		
+		function init_food()
+		{
+			food = [Math.floor(Math.random()*WIDTH), Math.floor(Math.random()*HEIGHT)];
+			//check if the snake head is in the snake body
+			for (i=0;i<snake.length;i++)
+			{
+				if (food[0]==snake[i][0]&&food[1]==snake[i][1])
+					init_food();
+			}
+		}
+		
+		function fillbox(x, y)
+		{
+			if (x<WIDTH&&y<HEIGHT&&x>=0&&y>=0)
+				document.getElementById(x+"x"+y).className += " boxfilled";
+		}
+		function clearall()
+		{
+			var x = document.getElementsByClassName("box");
+			for (i=0;i<x.length;i++)
+				x[i].className = "box";
+		}
+		function move_snake()
+		{
+			snakehead = snake[0];
+			//remove the tail if you are not eating anything 
+			//check if the snake head is hitting food 
+			if (snakehead[0]==food[0]&&snakehead[1]==food[1])
+			{
+				init_food();
+			}			
+			else 
+				snake.splice(snake.length-1, 1);
+			//add a node at head + direction 
+			
+			if (direction==2) //right
+				insertsnake = [snake[0][0]+1, snake[0][1]];
+			else if (direction==3) //down
+				insertsnake = [snake[0][0], snake[0][1]+1];
+			else if (direction==1)//up 
+				insertsnake = [snake[0][0], snake[0][1]-1];
+			else if (direction==0)//left 
+					insertsnake = [snake[0][0]-1, snake[0][1]];
+			snake.splice (0,0,insertsnake);
+		}
+		
+		function check_snake()
+		{
+			snakehead = snake[0];
+			//check if the snake head is in the snake body
+			for (i=1;i<snake.length;i++)
+			{
+				if (snakehead[0]==snake[i][0]&&snakehead[1]==snake[i][1])
+					restart_game();//call dead
+			}
+			//check if the snake head is hitting borders
+			if ((snakehead[0]==-1||snakehead[0]>=WIDTH)||(snakehead[1]==-1||snakehead[1]>=HEIGHT))
+				restart_game();//call dead
+
+		}
+		
+		function gameloop()
+		{
+			//move the snake
+			move_snake();
+			//check for snake die
+			check_snake();
+			//draw the snake and food
+			clearall();
+			for (i=0;i<snake.length;i++)
+				fillbox(snake[i][1],snake[i][0]);
+			fillbox(food[1], food[0]);
+		}
+		
+		document.addEventListener("keydown", snakeKeyDown, false);
+		
+		function snakeKeyDown(e)
+		{
+			var keyCode = e.keyCode;
+			//console.log(keyCode);
+			if ((keyCode==37&&direction!=2)||(keyCode==38&&direction!=3)||(keyCode==39&&direction!=0)||(keyCode==40&&direction!=1))
+				direction = keyCode-37;
+		}
+		</script>
+	</head>
+	<body onload="init()">
+		<div id="wrapper"></div>
+	</body>
+</html>
